@@ -1,21 +1,4 @@
-logo
-more
-question-ai-logo
-managemanage
-managemanage
-useruser
-fullfull
-closeclose
-Chat AI
-Hello! Is there any question I can help you with?
-What is the highest peak in the United States?
-What can you do?
-Ask AI
-Caution
-Refresh this page to activate the extension on this page.
-Refresh
-Feedback
-    --https://v3rmillion.net/member.php?action=profile&uid=1715331
+
     local Lib = {}
     if game.CoreGui:FindFirstChild("Lib") then
         game.CoreGui:FindFirstChild("Lib"):Destroy()
