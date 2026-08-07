@@ -160,7 +160,7 @@
 
         local CurrentSize = 25
         local Invis = {}
-        MinimizeUsable = true;
+        local MinimizeUsable = true
         Minimize.MouseButton1Click:Connect(function()
             if MinimizeUsable == true then
                 if Minimize.Text == "-" then
@@ -599,7 +599,7 @@
             Text.TextStrokeTransparency = 0.920
             Text.TextXAlignment = Enum.TextXAlignment.Left
 
-            DropDownUsable = true;
+            local DropDownUsable = true
             Text.MouseButton1Click:Connect(function()
                 if DropDownUsable == true then
                     if TextButton.Rotation == 0 then
@@ -644,7 +644,7 @@
                                         v.TextStrokeColor3 = Color3.fromRGB(200, 200, 200)
                                     end
                                 end
-                                location[flag] = v
+                                location[flag] = Text_2.Name
                                 Text.Text = tostring(location[flag])
                                 if DropdownType ~= "Update" then
                                     spawn(callback)
@@ -841,7 +841,7 @@
                 end
                 return Name
             end
-            Check = game:GetService("UserInputService").InputBegan:Connect(function(key)
+            local Check = game:GetService("UserInputService").InputBegan:Connect(function(key)
                 if Usable == true and not game:GetService("UserInputService"):GetFocusedTextBox() then
                     if key.KeyCode == location[flag] then
                         spawn(callback)
@@ -953,7 +953,7 @@
         end
 
         function Window:Search(options)
-            Color = options or false
+            local Color = options or false
 
             if Color == false then
                 Color = Color3.fromRGB(255,255,0)
@@ -1135,7 +1135,7 @@
                 Frame.BackgroundTransparency = 1.000
                 return Frame
             end
-            Minimize2Usable = true;
+            local Minimize2Usable = true
             minimize.MouseButton1Click:Connect(function()
                 local Numbers = GetNumbers()
                 if Minimize2Usable == true then
@@ -1195,4 +1195,6 @@
         end
         return Window
     end
-    return Lib 
+
+
+    return Lib
