@@ -1,0 +1,217 @@
+local GameName = ""
+local MarketplaceService = game:GetService("MarketplaceService")
+local success, gameInfo = pcall(function()
+    return MarketplaceService:GetProductInfo(game.PlaceId)
+end)
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+if success then
+    GameName = gameInfo.Name
+else
+    warn("Failed to get game name")
+end
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/reallycoolusername101-cmyk/Nil_Library/refs/heads/main/wizard"))()
+	local MainWindow = Library:NewWindow("NIL HUB -  " .. GameName)
+	local MainSection = MainWindow:NewSection("Main")
+
+
+
+
+MainSection:CreateButton("Infinite Coins ",function()
+
+
+local elements = {
+    "Shadow Charge",    -- 1
+    "Electral Chaos",   -- 2
+    "Blazing Entity",   -- 3
+    "Shadowfire",        -- 4
+    "Lightning",          -- 5
+    "Masterful Wrath",  -- 6
+    "Inferno",             -- 7
+    "Eternity Storm",   -- 8
+    "Frost"                -- 9
+}
+
+local Owned = 0
+
+
+local folder = game:GetService("Players").LocalPlayer.ownedElements
+
+for i, obj in pairs(folder:GetChildren()) do
+    if table.find(elements, obj.Name) then
+        Owned += 1
+    else
+        warn("this does not belong in elements [nil]")
+    end
+end
+
+if Owned >= 9 then
+        print("max elements reached, cannot infinite coin...")
+
+
+game.StarterGui:SetCore("SendNotification", {
+	Title = "error",
+	Text = "Err: player has reached max elements; cannot infinite money returning.." ,
+	Duration = 15
+})
+game.StarterGui:SetCore("SendNotification", {
+	Title = "warning",
+	Text = "you do not have any more elements to purchase" ,
+	Duration = 5
+})
+
+
+game.StarterGui:SetCore("SendNotification", {
+	Title = "note",
+	Text = "this script has prevented you from softlocking your money count to -inf, -inf money prevents you from buying anything" ,
+	Duration = 30
+})
+
+
+
+
+
+
+    return
+
+end
+
+
+
+
+
+local args = {
+
+[1] = "convertGems",
+
+[2] = -9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("zenMasterEvent"):FireServer(unpack(args))
+
+
+task.wait(1)
+
+
+
+for i, element in ipairs(elements) do
+ game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("elementMasteryEvent"):FireServer(element)  
+end
+
+task.wait(0.5)
+
+
+
+local args = {
+
+[1] = "convertGems",
+
+[2] = 10e200
+
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("zenMasterEvent"):FireServer(unpack(args))
+
+
+
+end)
+
+
+
+
+
+
+MainSection:CreateButton("Give Coins (only if gem is inf)",function()
+
+
+
+    
+local args = {
+
+[1] = "convertGems",
+
+[2] = 10e200
+
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("zenMasterEvent"):FireServer(unpack(args))
+
+
+end)
+
+
+
+
+
+
+
+MainSection:CreateButton("Discover all Islands ",function()
+    for i, islandpart in pairs(  workspace.islandUnlockParts:GetChildren()) do
+  local HumanoidRootPart = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+  HumanoidRootPart.CFrame = islandpart.CFrame
+  if firetouchinterest then
+  firetouchinterest(HumanoidRootPart, islandpart, 0)
+      firetouchinterest(HumanoidRootPart, islandpart, 1)
+  end
+task.wait()
+    end
+end)
+
+
+
+ function Touch(Parent, ChildName)
+  local TouchPart = Parent:FindFirstChild(ChildName)
+
+  if TouchPart then
+    local HumanoidRootPart = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not HumanoidRootPart then return end
+    if firetouchinterest then
+      firetouchinterest(HumanoidRootPart, TouchPart, 0)
+      firetouchinterest(HumanoidRootPart, TouchPart, 1)
+    else
+      TouchPart.CFrame = HumanoidRootPart.CFrame
+    end
+  end
+end
+
+
+ local Parts = workspace.Hoops:GetChildren()
+
+
+local HoopFarm = false
+  MainSection:CreateToggle("Hoop Farm",function(arg)
+    HoopFarm = arg
+
+    task.spawn(function()
+        while HoopFarm == true do
+task.wait()
+
+
+
+
+
+
+
+
+
+  for _, v in ipairs(Parts) do
+    if not v:FindFirstChild("Cooldown") then
+      Touch(v, "touchPart")
+    end
+  end
+
+
+
+
+
+
+
+
+
+        end
+    end)
+
+  end)
