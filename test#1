@@ -3,7 +3,9 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local success, gameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(game.PlaceId)
 end)
-local LP =         game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 if success then
     GameName = gameInfo.Name
 else
@@ -11,249 +13,101 @@ else
 end
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/reallycoolusername101-cmyk/Nil_Library/refs/heads/main/wizard"))()
-	local MainWindow = Library:NewWindow("Nil Hub - " .. GameName)
-	local FarmSection = MainWindow:NewSection("farm")
+	local MainWindow = Library:NewWindow("NIL HUB -  " .. GameName)
+	local MainSection = MainWindow:NewSection("Main")
 
-_G.HeadSize = 1000
-_G.NilEnabled = true
-local SetSize = 5
 
-game:GetService('RunService').RenderStepped:Connect(function()
-	if _G.NilEnabled then
-		for i,v in next, game:GetService('Players'):GetPlayers() do
-			if v.Name ~= game:GetService('Players').LocalPlayer.Name then
-				pcall(function()
-					if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-						v.Character.HumanoidRootPart.Size = Vector3.new(_G.HeadSize,_G.HeadSize,_G.HeadSize)
-						v.Character.HumanoidRootPart.Transparency = 0.8
-						v.Character.HumanoidRootPart.BrickColor = BrickColor.new("Really red")
-						v.Character.HumanoidRootPart.Material = "Neon"
-						v.Character.HumanoidRootPart.CanCollide = false
-					end
-				end)
-			end
-		end
-	else
-		-- Set to 2 when disabled
-		for i,v in next, game:GetService('Players'):GetPlayers() do
-			if v.Name ~= game:GetService('Players').LocalPlayer.Name then
-				pcall(function()
-					if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-						v.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 2)
-					end
-				end)
-			end
-		end
-	end
-end)
+    MainSection:CreateButton("Give inf money",function()
+     for h,i in pairs(game:GetService("Players").LocalPlayer.PlayerGui.Main.Frame["Main Body"].Main.Shop.Cars.CarList.CarList:GetChildren()) do
 
-FarmSection:CreateTextbox("HitBox Size", function(text)
-	SetSize = tonumber(text) or 5
-	_G.HeadSize = SetSize
-	print("HeadSize set to: " .. _G.HeadSize)
-end)
-
-FarmSection:CreateToggle("Hitbox extend", function(arg)
-	_G.NilEnabled = arg and true or false
-	if _G.NilEnabled == false then
-		_G.HeadSize = 2
-	else
-		_G.HeadSize = SetSize
-	end
-	print("Hitbox extend: " .. tostring(arg))
-end)
-
-_G.AutoKillEnabled = false
-
-FarmSection:CreateToggle("OP AUTO FARM", function(arg)
-    _G.AutoKillEnabled = arg
-    if arg == true then
-		_G.NilEnabled = true
-		_G.HeadSize = 9999
-		print("Auto Kill Started!")
-    else
-		print("Auto Kill Stopped!")
-	end
-end)
-
-FarmSection:CreateToggle("ESP", function(arg)
-	_G.NilEspToggle = arg
-	print("ESP: " .. tostring(arg))
-	
-	if not arg then
-		for i, v in pairs(game:GetService("Players"):GetPlayers()) do
-			if v.Character then
-				local esp = v.Character:FindFirstChild("ESPHighlight")
-				if esp then esp:Destroy() end
-			end
-		end
-	end
-end)
-
-local ESPCOLOUR = Color3.fromRGB(0, 255, 0)
-FarmSection:CreateColorPicker("Esp Colour", Color3.fromRGB(0, 255, 0), function(value)
-	ESPCOLOUR = value
-end)
-
-FarmSection:CreateTextbox("Player Speed", function(text)
-	if LP.Character and LP.Character:FindFirstChild("Humanoid") then
-		LP.Character.Humanoid.WalkSpeed = tonumber(text) or 18
-	end
-end)
-
-_G.NilEspToggle = true
-getgenv().TC = false
-local PlayerName = "Name"
-local P = game:GetService("Players")
+local args = {
+    -1e999,
+    i.Name,
+    "purchase"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CarShop"):FireServer(unpack(args))
+end
+    end)
 
 
 
-local function CreateESPForPlayer(player)
-	task.spawn(function()
-		while _G.NilEspToggle and player.Parent and player.Character do
-			pcall(function()
-				local character = player.Character
-				local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-				
-				if humanoidRootPart then
 
-					for _, part in pairs(character:GetDescendants()) do
-						if part:IsA("BasePart") then
-							part.Transparency = 0
-						end
-					end
-
-					local highlight = character:FindFirstChild("ESPHighlight")
-					if not highlight then
-						highlight = Instance.new("Highlight", character)
-						highlight.Name = "ESPHighlight"
-						highlight.Adornee = character
-						highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-					end
-					
-
-					highlight.FillColor = ESPCOLOUR
-					highlight.FillTransparency = 0.9
-					highlight.OutlineColor = ESPCOLOUR
-					highlight.OutlineTransparency = 0
-					highlight.OutlineWidth = 0
-					highlight.Enabled = true
-				end
-			end)
-			task.wait()
-		end
-		
-		if player.Character then
-			local esp = player.Character:FindFirstChild("ESPHighlight")
-			if esp then esp:Destroy() end
-		end
-	end)
+function getplot()
+    for i, plot in pairs(workspace.Tycoons:GetChildren()) do
+        if plot.Values.Owner.Value == game.Players.LocalPlayer.Name then
+            return plot
+        end
+    end
 end
 
 
-game:GetService('RunService').RenderStepped:Connect(function()
-	if not _G.NilEspToggle then return end
-	
-	pcall(function()
-		for i, v in pairs(P:GetPlayers()) do
-			if v ~= LP and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-				if not v.Character:FindFirstChild("ESPHighlight") then
-					CreateESPForPlayer(v)
-				end
-			end
-		end
-	end)
-end)
+local getplot = getplot()
+print(getplot.Name)
+local active = false
+MainSection:CreateToggle("AutoUpgrade",function(arg)
+active = arg
 
-P.PlayerAdded:Connect(function(player)
-	if _G.NilEspToggle then
-		task.wait(0.5)
-		CreateESPForPlayer(player)
-	end
-end)
+task.spawn(function()
+    if active == false then return end
 
-P.PlayerRemoving:Connect(function(player)
-	if player.Character then
-		local esp = player.Character:FindFirstChild("ESPHighlight")
-		if esp then esp:Destroy() end
-	end
-end)
+    while active do 
 
-local function FindToolInInventory()
-	for i, tool in pairs(LP.Backpack:GetChildren()) do
-		if tool:IsA("Tool") then
-			return tool
-		end
-	end
-	
-	for i, tool in pairs(LP.Character:GetChildren()) do
-		if tool:IsA("Tool") then
-			return tool
-		end
-	end
-	
-	return nil
+
+
+
+
+
+
+for i, button in pairs(getplot.Buttons:GetChildren()) do
+    print(button.Name)
+    
+    -- Fixed: Changed 'or' to 'and' so it must exclude ALL of these names
+    if button:FindFirstChild("Head") 
+        
+       and button.Head.Color ~= Color3.fromRGB(255, 0, 255) 
+       and button.Name ~= "Cash" 
+       and button.Name ~= "VIP" 
+       and button.Name ~= "Auto"
+       and button.Name ~= "PC 1"
+       and not button:FindFirstChild("Gamepass" )
+        then
+ 
+
+
+
+
+        print("Valid")
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = button.Head.CFrame
+        break 
+    end
 end
 
-local function AutoKill()
-	task.spawn(function()
-		while _G.AutoKillEnabled do
-			pcall(function()
-				if LP.Character and LP.Character:FindFirstChild("Humanoid") and LP.Character.Humanoid.Health > 0 then
-					local tool = FindToolInInventory()
-					
-					if tool then
-						-- Equip tool
-						if tool.Parent == LP.Backpack then
-							tool.Parent = LP.Character
-							task.wait(0.1)
-						end
-						
-						-- Get target
-						local target = nil
-						local closestDistance = math.huge
-						
-						for i, player in pairs(P:GetPlayers()) do
-							if player ~= LP and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-								local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
-								local myRoot = LP.Character:FindFirstChild("HumanoidRootPart")
-								
-								if targetRoot and myRoot then
-									local distance = (targetRoot.Position - myRoot.Position).Magnitude
-									if distance < closestDistance then
-										closestDistance = distance
-										target = player
-									end
-								end
-							end
-						end
-						
-						if target and target.Character then
-							local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
-							if targetRoot then
-								-- Activate tool (attack)
-								if tool:FindFirstChild("Handle") then
-									local myRoot = LP.Character:FindFirstChild("HumanoidRootPart")
-									if myRoot then
-									--	myRoot.CFrame = targetRoot.CFrame + targetRoot.CFrame.LookVector * 3 (no teleport)
-									end
-									
-									if tool:IsA("Tool") and tool.Parent == LP.Character then
-										tool:Activate()
-									end
-								end
-							end
-						end
-					end
-				end
-			end)
-			task.wait(0.3)
-		end
-	end)
-end
 
-game:GetService('RunService').RenderStepped:Connect(function()
-	if _G.AutoKillEnabled then
-		AutoKill()
-	end
+
+
+
+
+
+
+
+task.wait()
+
+
+
+
+
+
+end
 end)
+end)
+
+
+
+
+
+
+
+
+
+
+
