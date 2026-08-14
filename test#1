@@ -1,73 +1,914 @@
+
+
+
+
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local GameID = game.PlaceId
 local GameName = ""
+local VIM = game:GetService("VirtualInputManager")
 local MarketplaceService = game:GetService("MarketplaceService")
 local success, gameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(game.PlaceId)
 end)
-local LP =         game.Players.LocalPlayer
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 if success then
     GameName = gameInfo.Name
 else
     warn("Failed to get game name")
 end
 
+
+
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/reallycoolusername101-cmyk/Nil_Library/refs/heads/main/wizard"))()
-	local MainWindow = Library:NewWindow("NIL HUB -  " .. GameName)
-	local MainSection = MainWindow:NewSection("Main")
+local MainWindow = Library:NewWindow("Nil Hub - " .. GameName)
+local FarmSection = MainWindow:NewSection("main")
 
+_G.NilInfiniteRun = false
+_G.NilSprintSpeed = 25
+_G.NilGenerator = false
+_G.NilEspToggle = false
+_G.NilAutoBlock = false
+_G.NilGenESP = false
+_G.NilNoclip = false
+getgenv().TC = false
 
+local noclipConnection
+local function SetNoclipEnabled(enabled)
+    _G.NilNoclip = enabled
 
--- MainSection:CreateToggle("Get money", function(arg)
-    
+    if enabled then
+        if noclipConnection then
+            return
+        end
 
+        noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+            pcall(function()
+                local character = LP.Character
+                if not character then
+                    return
+                end
 
-
-
-
-
--- end)
-local am = 100
-MainSection:CreateTextbox("amount", function(arg)
-    
-
-local val = tonumber(arg)
-am = (val and math.min(99999999, val)) or 99999999
-
-
-end)
-   
-
-
-
-MainSection:CreateButton("Give Coins", function()
-    
- game:GetService("ReplicatedStorage").Remotes.generateBoost:FireServer("Coins", 480, am or 99999999)
-
-
-end)
-
-
-
-MainSection:CreateButton("Max Level", function()
-    
-for i=0, 10 do
-game:GetService("ReplicatedStorage").Remotes.generateBoost:FireServer("Levels", 800, 10)
+                for _, part in ipairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end)
+        end)
+    elseif noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
 end
 
+local function CollectItems()
+    local mapFolder = workspace:FindFirstChild("Map")
+    if mapFolder then
+        mapFolder = mapFolder:FindFirstChild("Ingame") or mapFolder
+    end
+    if mapFolder then
+        mapFolder = mapFolder:FindFirstChild("Map") or mapFolder
+    end
+
+    if not mapFolder then
+        warn("Map folder not found yet")
+        return
+    end
+
+    local character = LP.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not character or not root then
+        warn("Character not ready")
+        return
+    end
+
+    local items = {}
+    for _, child in ipairs(mapFolder:GetDescendants()) do
+        if child:IsA("Model") and (child.Name == "Medkit" or child.Name == "BloxyCola") then
+            table.insert(items, child)
+        end
+    end
+  local oldCFrame = root.CFrame
+    for _, item in ipairs(items) do
+        local itemRoot = item:FindFirstChild("ItemRoot") or item:FindFirstChildWhichIsA("BasePart")
+        if itemRoot then
+          
+            root.CFrame = itemRoot.CFrame + Vector3.new(0, 2.5, 0)
+            task.wait(1)
+            VIM:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+     VIM:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+        end
+    end
+              root.CFrame = oldCFrame
+end
+
+local ESPCOLOUR = Color3.fromRGB(0, 255, 0)
+
+local function CreateMenuButton(label, callback)
+    if FarmSection.CreateButton then
+        FarmSection:CreateButton(label, callback)
+    else
+        FarmSection:CreateToggle(label, function(arg)
+            if arg and callback then
+                callback()
+            end
+        end)
+    end
+end
+
+CreateMenuButton("get items", function()
+    CollectItems()
 end)
 
 
 
-MainSection:CreateButton("Max rank", function()
-    
-    for i=0, 5 do
-for i=0, 10 do
-game:GetService("ReplicatedStorage").Remotes.generateBoost:FireServer("Levels", 800, 10)
-end
-game:GetService("ReplicatedStorage").Remotes.rankUp:FireServer()
+FarmSection:CreateToggle("esp", function(arg)
+   _G.NilEspToggle = arg
+end)
 
-task.wait(1)
+
+local generatorLoop
+local function StartAutoGenerator(enabled)
+    _G.NilGenerator = enabled
+
+    if enabled then
+        if generatorLoop then
+            return
+        end
+
+        generatorLoop = game:GetService("RunService").Stepped:Connect(function()
+            if not _G.NilGenerator then
+                generatorLoop:Disconnect()
+                generatorLoop = nil
+                return
+            end
+
+            pcall(function()
+                repeat
+                local character = LP.Character
+                local root = character and character:FindFirstChild("HumanoidRootPart")
+                if not character or not root then
+                    return
+                end
+
+                local mapFolder = workspace:FindFirstChild("Map")
+                if mapFolder then
+                    mapFolder = mapFolder:FindFirstChild("Ingame") or mapFolder
+                end
+                if mapFolder then
+                    mapFolder = mapFolder:FindFirstChild("Map") or mapFolder
+                end
+                task.wait(0.01)
+            until mapFolder
+             
+
+                local closestGenerator = nil
+                local closestDistance = math.huge
+
+                for _, child in ipairs(mapFolder:GetDescendants()) do
+                    if child:IsA("Model") and child.Name == "Generator" then
+                        local part = child:FindFirstChild("Generator") or child:FindFirstChildWhichIsA("BasePart")
+                        if part then
+                            local distance = (part.Position - root.Position).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestGenerator = part
+                            end
+                        end
+                    end
+                end
+
+                if closestGenerator and closestDistance <= 25 then
+                    local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
+                    if tool then
+                        tool:Activate()
+                    end
+                end
+            end)
+        end)
+    elseif generatorLoop then
+        generatorLoop:Disconnect()
+        generatorLoop = nil
+    end
 end
+
+FarmSection:CreateToggle("auto generator", function(arg)
+    if arg then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "msg",
+            Text = "make sure you are within the ui to auto",
+            Button1 = "Ok",
+            Duration = 3
+        })
+    end
+
+    StartAutoGenerator(arg)
+end)
+
+
+FarmSection:CreateToggle("generator ESP", function(arg)
+   _G.NilGenESP = arg
+end)
+
+
+
+
+FarmSection:CreateToggle("Infinite Sprint", function(arg)
+   _G.NilInfiniteRun = arg
+end)
+
+FarmSection:CreateToggle("Noclip", function(arg)
+    SetNoclipEnabled(arg)
+    _G.NilNoclip = arg
+end)
+
+FarmSection:CreateTextbox("Sprint Speed", function(text)
+    _G.NilSprintSpeed = tonumber(text)
+end)
+
+FarmSection:CreateToggle("Auto block", function(arg)
+    _G.NilAutoBlock = arg
+    if arg == true then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "msg",
+            Text = "the block isn't 100% accurate sometimes it misses",
+            Button1 = "Ok",
+            Duration = 3
+        })
+    end
+end)
+
+
+function ESPGens()
+
+-- Wait safely for the client to download the map folder structure
+local mapFolder = workspace:WaitForChild("Map", 10)
+if mapFolder then
+    mapFolder = mapFolder:WaitForChild("Ingame", 10)
+end
+if mapFolder then
+    mapFolder = mapFolder:WaitForChild("Map", 10)
+end
+
+if not mapFolder then
+    print("error, map failed to stream to client in time")
+else
+    print("ACTIVE")
+    
+    -- Reusable highlighter function
+     -- Reusable highlighter function
+    local function highlightGenerator(Gen)
+        if not Gen or not Gen:IsA("Model")--[[]] and Gen.Name ~= "Generator" then return end
+        
+        -- Safely wait for the attribute if it hasn't synced yet
+        if not Gen:GetAttribute("PowerGain") then
+            Gen:GetAttributeChangedSignal("PowerGain"):Wait()
+        end
+        
+        -- Clear old highlights safely
+        for _, item in pairs(Gen:GetChildren()) do
+            if item:IsA("Highlight") then
+                item:Destroy()
+            end
+        end
+
+        local generatorPart = nil
+        if Gen:FindFirstChild("Instances") and Gen.Instances:FindFirstChild("Generator") then
+            generatorPart = Gen.Instances.Generator
+        end
+
+        local NewHighlight = Instance.new("Highlight")
+        NewHighlight.Name = "NilHighlight"
+        NewHighlight.FillTransparency = 1
+        NewHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        NewHighlight.Parent = Gen
+
+        if generatorPart and (generatorPart:IsA("BasePart") or generatorPart:IsA("Model")) then
+            NewHighlight.Adornee = generatorPart
+        else
+            NewHighlight.Adornee = Gen
+        end
+
+        local progressBar = generatorPart and generatorPart:FindFirstChild("Progress")
+            and generatorPart.Progress:FindFirstChild("BarUI")
+            and generatorPart.Progress.BarUI:FindFirstChild("Bar")
+
+local FULL_SIZE = UDim2.new(1, 0, 1, 0)
+
+if progressBar and progressBar:IsA("Frame") and Gen.Name == "Generator" then
+    if progressBar.Size == FULL_SIZE then
+        NewHighlight.OutlineColor = Color3.fromRGB(0, 255, 0)   -- Green if full
+    else
+        NewHighlight.OutlineColor = Color3.fromRGB(255, 0, 0)   -- Red if not full
+    end
+else
+    NewHighlight.OutlineColor = Color3.fromRGB(147, 0, 108)     -- Purple if invalid/not generator
+end
+
+        
+        print("COMPLETE FOR: " .. Gen.Name)
+    end
+
+
+    -- 1. Highlight parts already loaded in workspace
+    for _, Gen in pairs(mapFolder:GetChildren()) do
+        task.spawn(highlightGenerator, Gen)
+    end
+
+    -- 2. Highlight parts that stream in actively after the script runs
+    mapFolder.ChildAdded:Connect(highlightGenerator)
+end
+
+
+
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local PlayerName = "Name"
+local P = game:GetService("Players")
+
+
+local function CreateESPForPlayer(player)
+    task.spawn(function()
+        while _G.NilEspToggle and player.Parent and player.Character do
+            pcall(function()
+                local character = player.Character
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                
+                if humanoidRootPart then
+
+
+                
+
+                    local highlight = character:FindFirstChild("ESPHighlight")
+                    if not highlight then
+                        highlight = Instance.new("Highlight", character)
+                        highlight.Name = "ESPHighlight"
+                        highlight.Adornee = character
+                        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    end
+                    
+
+                    highlight.FillColor = ESPCOLOUR
+                    highlight.FillTransparency = 1
+                    highlight.OutlineColor = ESPCOLOUR
+                    highlight.OutlineTransparency = 0
+                    
+                    local killerFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+                    local isKiller = false
+                    if killerFolder then
+                        for _, child in ipairs(killerFolder:GetChildren()) do
+                            if child:GetAttribute("Username") == character.Name or child.Name == character.Name then
+                                isKiller = true
+                                break
+                            end
+                        end
+                    end
+
+                    if isKiller then
+                        highlight.OutlineColor = Color3.fromRGB(255, 0, 0) -- red
+                    else
+                        highlight.OutlineColor = Color3.fromRGB(255,255,255) -- white
+                    end
+
+                    highlight.Enabled = true
+                end
+            end)
+            task.wait()
+        end
+        
+        if player.Character then
+            local esp = player.Character:FindFirstChild("ESPHighlight")
+            if esp then esp:Destroy() end
+        end
+    end)
+end
+
+
+game:GetService('RunService').RenderStepped:Connect(function()
+    if not _G.NilEspToggle then return end
+    
+    pcall(function()
+        for i, v in pairs(P:GetPlayers()) do
+            if v ~= LP and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                if not v.Character:FindFirstChild("ESPHighlight") then
+                    CreateESPForPlayer(v)
+                end
+            end
+        end
+    end)
+end)
+
+P.PlayerAdded:Connect(function(player)
+    if _G.NilEspToggle then
+        task.wait(0.5)
+        CreateESPForPlayer(player)
+    end
+end)
+
+P.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        local esp = player.Character:FindFirstChild("ESPHighlight")
+        if esp then esp:Destroy() end
+    end
+end)
+
+
+-- "Medkit"
+-- "BloxyCola"
+-- "workspace.Players.Killers"
+
+
+
+
+
+getgenv().TC = false
+local PlayerName = "Name"
+
+-- Services
+local Players = game:GetService("Players")
+
+-- Define missing variables safely
+local LP = Players.LocalPlayer
+
+-- Color Configurations
+local COLOR_DEAD = Color3.fromRGB(0, 0, 139)       -- Dark Blue
+local COLOR_SURVIVOR = Color3.fromRGB(0, 100, 0)   -- Dark Green
+local COLOR_KILLER = Color3.fromRGB(139, 0, 0)     -- Deep Red
+local COLOR_DEFAULT = Color3.fromRGB(0, 100, 0)    -- Default Survivor fallback
+
+-- Safely erases ESP elements from a specific character
+local function RemoveESP(character)
+    if not character then return end
+    local highlight = character:FindFirstChild("ESPHighlight")
+    if highlight then highlight:Destroy() end
+    
+    local root = character:FindFirstChild("HumanoidRootPart")
+    local tag = root and root:FindFirstChild("EspBillboard")
+    if tag then tag:Destroy() end
+end
+
+-- Clear ESP elements from absolutely everyone (Global reset)
+local function WipeAllESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            RemoveESP(player.Character)
+        end
+    end
+end
+
+-- Creates or updates the overhead Name and Distance UI tags
+local function ManageBillboardTag(player, targetColor, distance)
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local billboard = root:FindFirstChild("EspBillboard")
+    local textLabel
+    
+    if not billboard then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "EspBillboard"
+        billboard.Size = UDim2.new(0, 250, 0, 60)
+        billboard.StudsOffset = Vector3.new(0, 5, 0) -- FIXED: Set higher (5 studs above head)
+        billboard.AlwaysOnTop = true
+        
+        textLabel = Instance.new("TextLabel")
+        textLabel.Name = "EspText"
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Font = Enum.Font.RobotoMono
+        textLabel.TextSize = 14
+        
+        -- FIXED: Use high-fidelity UIStroke for crisp text outline rendering
+        local uiStroke = Instance.new("UIStroke")
+        uiStroke.Name = "TextOutline"
+        uiStroke.Color = Color3.fromRGB(255,255,255)
+        uiStroke.Thickness = 2
+        uiStroke.Transparency = 0
+        uiStroke.StrokeSizingMode = Enum.StrokeSizingMode.FixedSize -- Prevent layout distance jitter
+        uiStroke.Parent = textLabel
+        
+        textLabel.Parent = billboard
+        billboard.Parent = root
+    else
+        textLabel = billboard:FindFirstChild("EspText")
+    end
+
+    if textLabel then
+        textLabel.Text = string.format("%s\n[%d Studs]", player.Name, distance)
+        textLabel.TextColor3 = targetColor
+        
+        -- Max distance limit: Hide completely if 1000+ studs away
+        if distance > 1000 then
+            billboard.Enabled = false
+        else
+            billboard.Enabled = _G.NilEspToggle
+        end
+    end
+end
+
+-- Creates or dynamically updates a unique highlight on a character model
+local function ManagePlayerHighlight(player, targetColor, distance)
+    local character = player.Character
+    if not character or player == LP then return end
+
+    local highlight = character:FindFirstChild("ESPHighlight")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "ESPHighlight"
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.Parent = character
+    end
+
+    if distance > 350 then
+        highlight.Enabled = false
+    else
+        -- ANTI-FLICKER INTERLOCK: Only rewrite if a different team color is registered
+        if highlight.OutlineColor ~= targetColor or not highlight.Enabled then
+            highlight.FillColor = targetColor
+            highlight.FillTransparency = 0.95 -- Force engine to lock custom canvas
+            highlight.OutlineTransparency = 0
+            highlight.OutlineColor = targetColor
+        end
+        highlight.Enabled = _G.NilEspToggle
+    end
+end
+
+-- Scans the folder structure to find a player's current role
+local function DeterminePlayerColor(player)
+    local playersFolder = workspace:FindFirstChild("Players")
+    if not playersFolder then return nil end
+
+    -- 1. Check Killers Folder
+    local killers = playersFolder:FindFirstChild("Killers")
+    if killers then
+        for _, child in ipairs(killers:GetChildren()) do
+            if child:GetAttribute("Username") == player.Name or child.Name == player.Name then
+                return COLOR_KILLER
+            end
+        end
+    end
+
+    -- 2. Check Spectating Folder
+    local spectating = playersFolder:FindFirstChild("Spectating")
+    if spectating then
+        for _, child in ipairs(spectating:GetChildren()) do
+            if child.Name == player.Name then
+                return COLOR_DEAD
+            end
+        end
+    end
+
+    -- 3. Check Survivors Folder
+    local survivors = playersFolder:FindFirstChild("Survivors")
+    if survivors then
+        for _, child in ipairs(survivors:GetChildren()) do
+            if child.Name == player.Name then
+                return COLOR_SURVIVOR
+            end
+        end
+    end
+
+    return nil
+end
+
+-- Event tracking setup for new characters joining or respawning
+local function OnPlayerJoined(player)
+    player.CharacterAdded:Connect(function(character)
+        if player == LP then return end
+        character:WaitForChild("HumanoidRootPart", 10)
+        
+        local color = nil
+        local attempts = 0
+        while color == nil and attempts < 30 do
+            color = DeterminePlayerColor(player)
+            if color == nil then
+                task.wait(0.1)
+                attempts = attempts + 1
+            end
+        end
+        
+        if _G.NilEspToggle then
+            local finalColor = color or COLOR_DEFAULT
+            local distance = 0
+            if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("HumanoidRootPart") then
+                distance = math.round((character.HumanoidRootPart.Position - LP.Character.HumanoidRootPart.Position).Magnitude)
+            end
+            ManagePlayerHighlight(player, finalColor, distance)
+            ManageBillboardTag(player, finalColor, distance)
+        end
+    end)
+    
+    player.CharacterRemoving:Connect(RemoveESP)
+end
+
+-- Clean up completely when players disconnect from server
+Players.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        RemoveESP(player.Character)
+    end
+end)
+
+-- Initialize tracking layouts for current server occupants
+for _, player in ipairs(Players:GetPlayers()) do
+    OnPlayerJoined(player)
+end
+Players.PlayerAdded:Connect(OnPlayerJoined)
+
+-- Core 0.1-second master logic updates (Refreshes role switching and distance math)
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        
+        if not _G.NilEspToggle then
+            WipeAllESP()
+        else
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LP and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local calculatedColor = DeterminePlayerColor(player) or COLOR_DEFAULT
+                    
+                    -- Pre-calculate single frame distance context shared across nodes
+                    local distance = 0
+                    if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                        distance = math.round((player.Character.HumanoidRootPart.Position - LP.Character.HumanoidRootPart.Position).Magnitude)
+                    end
+                    
+                    ManagePlayerHighlight(player, calculatedColor, distance)
+                    ManageBillboardTag(player, calculatedColor, distance)
+                end
+            end
+        end
+    end
+end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+local animationIds = {
+    ["126830014841198"] = true, ["126355327951215"] = true, ["121086746534252"] = true,
+    ["18885909645"] = true, ["98456918873918"] = true, ["105458270463374"] = true,
+    ["83829782357897"] = true, ["125403313786645"] = true, ["118298475669935"] = true,
+    ["82113744478546"] = true, ["70371667919898"] = true, ["99135633258223"] = true,
+    ["97167027849946"] = true, ["109230267448394"] = true, ["139835501033932"] = true,
+    ["126896426760253"] = true, ["109667959938617"] = true, ["126681776859538"] = true,
+    ["129976080405072"] = true, ["121293883585738"] = true,["81639435858902"] = true,
+    ["137314737492715"] = true,["92173139187970"] = true
+
+}
+
+local detectionRange = 10 
+local blockCooldown = false
+local punchCooldown = false
+
+local function autoPunch(targetRoot)
+    if punchCooldown then return end
+    punchCooldown = true
+    
+    local myRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if myRoot and targetRoot then
+        -- Instant Aim
+        local targetPos = Vector3.new(targetRoot.Position.X, myRoot.Position.Y, targetRoot.Position.Z)
+        myRoot.CFrame = CFrame.new(myRoot.Position, targetPos)
+    end
+    
+    task.wait(0.001)
+    VIM:SendKeyEvent(true, Enum.KeyCode.R, false, game)
+    VIM:SendKeyEvent(false, Enum.KeyCode.R, false, game)
+    
+    task.wait(0.05) 
+    punchCooldown = false
+end
+
+local function instantBlock(targetRoot)
+    if blockCooldown then return end
+    blockCooldown = true
+    
+    VIM:SendKeyEvent(true, Enum.KeyCode.Q, false, game)
+    VIM:SendKeyEvent(false, Enum.KeyCode.Q, false, game)
+    
+    task.spawn(function()
+        autoPunch(targetRoot)
+    end)
+    
+    task.wait(0.005) 
+    blockCooldown = false
+end
+
+-- Core Detection Logic
+local function checkCharacter(char)
+    if not char or char == localPlayer.Character then return end
+    
+    local enemyRoot = char:FindFirstChild("HumanoidRootPart")
+    local enemyHum = char:FindFirstChildOfClass("Humanoid")
+    local myRoot = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    
+    if enemyRoot and enemyHum and myRoot then
+        local dist = (enemyRoot.Position - myRoot.Position).Magnitude
+        if dist <= detectionRange then
+            local animator = enemyHum:FindFirstChildOfClass("Animator")
+            if animator then
+                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                    local id = string.match(track.Animation.AnimationId, "%d+")
+                    if id and animationIds[id] then
+                        task.spawn(instantBlock, enemyRoot)
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+
+task.spawn(function()
+    while task.wait(0.01) do
+
+local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+local stamina = require(Sprinting)
+stamina.MaxStamina = 100  -- Maximum stamina
+stamina.MinStamina = -20  -- Minimum stamina
+stamina.StaminaGain = 100 -- Stamina gain
+stamina.StaminaLoss = 5 -- Stamina loss
+stamina.SprintSpeed = _G.NilSprintSpeed -- Sprint speed
+stamina.StaminaLossDisabled = _G.NilInfiniteRun -- Disable stamina drain (true/false)
+
+
+
+    end
+end)
+
+
+
+
+
+RunService.Heartbeat:Connect(function()
+
+
+
+
+if _G.NilAutoBlock then
+    -- 1. Check folder-based killers (Your basis script)
+    local killerFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
+    if killerFolder then
+        for _, killer in ipairs(killerFolder:GetChildren()) do
+            checkCharacter(killer)
+        end
+    end
+
+    -- 2. Check all players (Backup in case folder is empty)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character then
+            checkCharacter(player.Character)
+        end
+    end
+end
+end)
+
+
+task.spawn(function()
+    while true do
+        if _G.NilGenESP then
+            ESPGens()
+        end
+        task.wait(5)
+    end
+  
+end)
+
+
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+local localPlayer = Players.LocalPlayer
+local mapFolder = Workspace:WaitForChild("Map"):WaitForChild("Ingame"):WaitForChild("Map")
+
+-- Function to find the closest generator under 100% progress
+local function getClosestIncompleteGenerator(character)
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return nil end
+
+    local closestGen = nil
+    local minDistance = math.huge
+
+    for _, gen in ipairs(mapFolder:GetChildren()) do
+        if gen.Name ~= "FakeGenerator" then
+            local progressObj = gen:FindFirstChild("Progress")
+            
+            if progressObj and (progressObj:IsA("NumberValue") or progressObj:IsA("IntValue")) then
+                local progressValue = progressObj.Value
+                
+                if progressValue < 100 then
+                    local genRoot = gen:FindFirstChild("Main") or gen:FindFirstChild("COLLISION") or gen:FindFirstChildWhichIsA("BasePart")
+
+                    if genRoot then
+                        local distance = (rootPart.Position - genRoot.Position).Magnitude
+                        if distance < minDistance then
+                            minDistance = distance
+                            closestGen = gen
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return closestGen
+end
+
+-- Track the exact timestamp of the last remote fire
+
+local lastFireTime = 0
+
+-- Main loop routine
+
+task.spawn(function()
+    while true do
+        task.wait(0.01)
+        if  _G.NilGenerator == true then
+           
+
+        local character = localPlayer.Character
+        local targetGen = getClosestIncompleteGenerator(character)
+
+        -- Exit loop if no incomplete generators remain
+        if not targetGen then
+            print("All nearby generators are completed or none found.")
+            break
+        end
+
+        -- Verify if the PuzzleUI is currently present in PlayerGui
+        local playerGui = localPlayer:FindFirstChild("PlayerGui")
+        local puzzleUI = playerGui and playerGui:FindFirstChild("PuzzleUI")
+
+        if puzzleUI then
+            -- Get the current game time
+            local currentTime = os.clock()
+            
+            -- Only fire if 3 seconds have passed since the last successful fire
+            if currentTime - lastFireTime >= 3 then
+                local remotes = targetGen:FindFirstChild("Remotes")
+                local remoteEvent = remotes and remotes:FindFirstChild("RE")
+
+                if remoteEvent and remoteEvent:IsA("RemoteEvent") then
+                    remoteEvent:FireServer()
+                    lastFireTime = currentTime -- Update the timestamp
+                else
+                
+                end
+            end
+        else
+            print("error, please go into the ui")
+        end
+
+    
+        task.wait(0.01)
+    end
+
+        end
+
 end)
