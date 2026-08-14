@@ -3,9 +3,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local success, gameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(game.PlaceId)
 end)
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local LP =         game.Players.LocalPlayer
 if success then
     GameName = gameInfo.Name
 else
@@ -13,205 +11,249 @@ else
 end
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/reallycoolusername101-cmyk/Nil_Library/refs/heads/main/wizard"))()
-	local MainWindow = Library:NewWindow("NIL HUB -  " .. GameName)
-	local MainSection = MainWindow:NewSection("Main")
+	local MainWindow = Library:NewWindow("Nil Hub - " .. GameName)
+	local FarmSection = MainWindow:NewSection("farm")
 
+_G.HeadSize = 1000
+_G.NilEnabled = true
+local SetSize = 5
 
+game:GetService('RunService').RenderStepped:Connect(function()
+	if _G.NilEnabled then
+		for i,v in next, game:GetService('Players'):GetPlayers() do
+			if v.Name ~= game:GetService('Players').LocalPlayer.Name then
+				pcall(function()
+					if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+						v.Character.HumanoidRootPart.Size = Vector3.new(_G.HeadSize,_G.HeadSize,_G.HeadSize)
+						v.Character.HumanoidRootPart.Transparency = 0.8
+						v.Character.HumanoidRootPart.BrickColor = BrickColor.new("Really red")
+						v.Character.HumanoidRootPart.Material = "Neon"
+						v.Character.HumanoidRootPart.CanCollide = false
+					end
+				end)
+			end
+		end
+	else
+		-- Set to 2 when disabled
+		for i,v in next, game:GetService('Players'):GetPlayers() do
+			if v.Name ~= game:GetService('Players').LocalPlayer.Name then
+				pcall(function()
+					if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+						v.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 2)
+					end
+				end)
+			end
+		end
+	end
+end)
 
+FarmSection:CreateTextbox("HitBox Size", function(text)
+	SetSize = tonumber(text) or 5
+	_G.HeadSize = SetSize
+	print("HeadSize set to: " .. _G.HeadSize)
+end)
 
-MainSection:CreateButton("Infinite Coins ",function()
+FarmSection:CreateToggle("Hitbox extend", function(arg)
+	_G.NilEnabled = arg and true or false
+	if _G.NilEnabled == false then
+		_G.HeadSize = 2
+	else
+		_G.HeadSize = SetSize
+	end
+	print("Hitbox extend: " .. tostring(arg))
+end)
 
+_G.AutoKillEnabled = false
 
-local elements = {
-    "Shadow Charge",    -- 1
-    "Electral Chaos",   -- 2
-    "Blazing Entity",   -- 3
-    "Shadowfire",        -- 4
-    "Lightning",          -- 5
-    "Masterful Wrath",  -- 6
-    "Inferno",             -- 7
-    "Eternity Storm",   -- 8
-    "Frost"                -- 9
-}
-
-local Owned = 0
-
-
-local folder = game:GetService("Players").LocalPlayer.ownedElements
-
-for i, obj in pairs(folder:GetChildren()) do
-    if table.find(elements, obj.Name) then
-        Owned += 1
+FarmSection:CreateToggle("OP AUTO FARM", function(arg)
+    _G.AutoKillEnabled = arg
+    if arg == true then
+		_G.NilEnabled = true
+		_G.HeadSize = 9999
+		print("Auto Kill Started!")
     else
-        warn("this does not belong in elements [nil]")
-    end
-end
-
-if Owned >= 9 then
-        print("max elements reached, cannot infinite coin...")
-
-
-game.StarterGui:SetCore("SendNotification", {
-	Title = "error",
-	Text = "Err: player has reached max elements; cannot infinite money returning.." ,
-	Duration = 15
-})
-game.StarterGui:SetCore("SendNotification", {
-	Title = "warning",
-	Text = "you do not have any more elements to purchase" ,
-	Duration = 5
-})
-
-
-game.StarterGui:SetCore("SendNotification", {
-	Title = "note",
-	Text = "this script has prevented you from softlocking your money count to -inf, -inf money prevents you from buying anything" ,
-	Duration = 30
-})
-
-
-
-
-
-
-    return
-
-end
-
-
-
-
-
-local args = {
-
-[1] = "convertGems",
-
-[2] = -9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
-
-}
-
-game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("zenMasterEvent"):FireServer(unpack(args))
-
-
-task.wait(1)
-
-
-
-for i, element in ipairs(elements) do
- game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("elementMasteryEvent"):FireServer(element)  
-end
-
-task.wait(0.5)
-
-
-
-local args = {
-
-[1] = "convertGems",
-
-[2] = 10e200
-
-}
-
-game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("zenMasterEvent"):FireServer(unpack(args))
-
-
-
+		print("Auto Kill Stopped!")
+	end
 end)
 
-
-
-
-
-
-MainSection:CreateButton("Give Coins (only if gem is inf)",function()
-
-
-
-    
-local args = {
-
-[1] = "convertGems",
-
-[2] = 10e200
-
-}
-
-game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("zenMasterEvent"):FireServer(unpack(args))
-
-
+FarmSection:CreateToggle("ESP", function(arg)
+	_G.NilEspToggle = arg
+	print("ESP: " .. tostring(arg))
+	
+	if not arg then
+		for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+			if v.Character then
+				local esp = v.Character:FindFirstChild("ESPHighlight")
+				if esp then esp:Destroy() end
+			end
+		end
+	end
 end)
 
-
-
-
-
-
-
-MainSection:CreateButton("Discover all Islands ",function()
-    for i, islandpart in pairs(  workspace.islandUnlockParts:GetChildren()) do
-  local HumanoidRootPart = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-  HumanoidRootPart.CFrame = islandpart.CFrame
-  if firetouchinterest then
-  firetouchinterest(HumanoidRootPart, islandpart, 0)
-      firetouchinterest(HumanoidRootPart, islandpart, 1)
-  end
-task.wait()
-    end
+local ESPCOLOUR = Color3.fromRGB(0, 255, 0)
+FarmSection:CreateColorPicker("Esp Colour", Color3.fromRGB(0, 255, 0), function(value)
+	ESPCOLOUR = value
 end)
 
+FarmSection:CreateTextbox("Player Speed", function(text)
+	if LP.Character and LP.Character:FindFirstChild("Humanoid") then
+		LP.Character.Humanoid.WalkSpeed = tonumber(text) or 18
+	end
+end)
+
+_G.NilEspToggle = true
+getgenv().TC = false
+local PlayerName = "Name"
+local P = game:GetService("Players")
 
 
- function Touch(Parent, ChildName)
-  local TouchPart = Parent:FindFirstChild(ChildName)
 
-  if TouchPart then
-    local HumanoidRootPart = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not HumanoidRootPart then return end
-    if firetouchinterest then
-      firetouchinterest(HumanoidRootPart, TouchPart, 0)
-      firetouchinterest(HumanoidRootPart, TouchPart, 1)
-    else
-      TouchPart.CFrame = HumanoidRootPart.CFrame
-    end
-  end
+local function CreateESPForPlayer(player)
+	task.spawn(function()
+		while _G.NilEspToggle and player.Parent and player.Character do
+			pcall(function()
+				local character = player.Character
+				local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+				
+				if humanoidRootPart then
+
+					for _, part in pairs(character:GetDescendants()) do
+						if part:IsA("BasePart") then
+							part.Transparency = 0
+						end
+					end
+
+					local highlight = character:FindFirstChild("ESPHighlight")
+					if not highlight then
+						highlight = Instance.new("Highlight", character)
+						highlight.Name = "ESPHighlight"
+						highlight.Adornee = character
+						highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+					end
+					
+
+					highlight.FillColor = ESPCOLOUR
+					highlight.FillTransparency = 0.9
+					highlight.OutlineColor = ESPCOLOUR
+					highlight.OutlineTransparency = 0
+					highlight.OutlineWidth = 0
+					highlight.Enabled = true
+				end
+			end)
+			task.wait()
+		end
+		
+		if player.Character then
+			local esp = player.Character:FindFirstChild("ESPHighlight")
+			if esp then esp:Destroy() end
+		end
+	end)
 end
 
 
- local Parts = workspace.Hoops:GetChildren()
+game:GetService('RunService').RenderStepped:Connect(function()
+	if not _G.NilEspToggle then return end
+	
+	pcall(function()
+		for i, v in pairs(P:GetPlayers()) do
+			if v ~= LP and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+				if not v.Character:FindFirstChild("ESPHighlight") then
+					CreateESPForPlayer(v)
+				end
+			end
+		end
+	end)
+end)
 
+P.PlayerAdded:Connect(function(player)
+	if _G.NilEspToggle then
+		task.wait(0.5)
+		CreateESPForPlayer(player)
+	end
+end)
 
-local HoopFarm = false
-  MainSection:CreateToggle("Hoop Farm",function(arg)
-    HoopFarm = arg
+P.PlayerRemoving:Connect(function(player)
+	if player.Character then
+		local esp = player.Character:FindFirstChild("ESPHighlight")
+		if esp then esp:Destroy() end
+	end
+end)
 
-    task.spawn(function()
-        while HoopFarm == true do
-task.wait()
+local function FindToolInInventory()
+	for i, tool in pairs(LP.Backpack:GetChildren()) do
+		if tool:IsA("Tool") then
+			return tool
+		end
+	end
+	
+	for i, tool in pairs(LP.Character:GetChildren()) do
+		if tool:IsA("Tool") then
+			return tool
+		end
+	end
+	
+	return nil
+end
 
+local function AutoKill()
+	task.spawn(function()
+		while _G.AutoKillEnabled do
+			pcall(function()
+				if LP.Character and LP.Character:FindFirstChild("Humanoid") and LP.Character.Humanoid.Health > 0 then
+					local tool = FindToolInInventory()
+					
+					if tool then
+						-- Equip tool
+						if tool.Parent == LP.Backpack then
+							tool.Parent = LP.Character
+							task.wait(0.1)
+						end
+						
+						-- Get target
+						local target = nil
+						local closestDistance = math.huge
+						
+						for i, player in pairs(P:GetPlayers()) do
+							if player ~= LP and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+								local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
+								local myRoot = LP.Character:FindFirstChild("HumanoidRootPart")
+								
+								if targetRoot and myRoot then
+									local distance = (targetRoot.Position - myRoot.Position).Magnitude
+									if distance < closestDistance then
+										closestDistance = distance
+										target = player
+									end
+								end
+							end
+						end
+						
+						if target and target.Character then
+							local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+							if targetRoot then
+								-- Activate tool (attack)
+								if tool:FindFirstChild("Handle") then
+									local myRoot = LP.Character:FindFirstChild("HumanoidRootPart")
+									if myRoot then
+									--	myRoot.CFrame = targetRoot.CFrame + targetRoot.CFrame.LookVector * 3 (no teleport)
+									end
+									
+									if tool:IsA("Tool") and tool.Parent == LP.Character then
+										tool:Activate()
+									end
+								end
+							end
+						end
+					end
+				end
+			end)
+			task.wait(0.3)
+		end
+	end)
+end
 
-
-
-
-
-
-
-
-  for _, v in ipairs(Parts) do
-    if not v:FindFirstChild("Cooldown") then
-      Touch(v, "touchPart")
-    end
-  end
-
-
-
-
-
-
-
-
-
-        end
-    end)
-
-  end)
+game:GetService('RunService').RenderStepped:Connect(function()
+	if _G.AutoKillEnabled then
+		AutoKill()
+	end
+end)
