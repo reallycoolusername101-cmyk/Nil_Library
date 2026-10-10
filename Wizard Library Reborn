@@ -1,1 +1,15 @@
-loadstring(game:HttpGet("https://vss.pandauth.com/kv/27040f7580fba040"))()
+-- Panda Auth - V3 (Pelinda)
+-- The V3 library and your service ID are injected automatically when you
+-- upload this script to the Kryptic Vault. Nothing to configure here.
+local result = Pelinda.Init({
+    Key = "USER_KEY_HERE",
+    SilentMode = false,
+})
+if result == "validated!!" then
+    print("[Panda] Authenticated. Premium:", __PELINDA_IS_PREMIUM__)
+    loadstring(game:HttpGet("https://vss.pandauth.com/kv/27040f7580fba040"))()
+elseif result == "error!!" then
+    warn("[Panda] Connection error.")
+else
+    warn("[Panda] Get a key: " .. Pelinda.GetKeyLink())
+end
